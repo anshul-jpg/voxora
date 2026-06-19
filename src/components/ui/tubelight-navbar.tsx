@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ interface NavBarProps {
 }
 
 export function NavBar({ items, className }: NavBarProps) {
+  const pathname = usePathname();
   const [activeTab, setActiveTab] = useState(items[0].name);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -27,6 +29,93 @@ export function NavBar({ items, className }: NavBarProps) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    if (pathname === "/pricing") {
+      setActiveTab("Pricing");
+      return;
+    }
+
+    if (pathname !== "/") return;
+
+    const sections = ["features", "demo", "contact"];
+    const options = {
+      root: null,
+      rootMargin: "-40% 0px -50% 0px",
+      threshold: 0,
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          const matchingItem = items.find(
+            (item) => item.url.endsWith(`#${id}`) || item.url.endsWith(id)
+          );
+          if (matchingItem) {
+            setActiveTab(matchingItem.name);
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, options);
+
+    const handleScroll = () => {
+      if (window.scrollY < 120) {
+        setActiveTab("Home");
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    sections.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    // Handle initial hash on load
+    const hash = window.location.hash;
+    if (hash) {
+      const id = hash.replace("#", "");
+      const matchingItem = items.find(
+        (item) => item.url.endsWith(`#${id}`) || item.url.endsWith(id)
+      );
+      if (matchingItem) {
+        setActiveTab(matchingItem.name);
+      }
+    }
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [pathname, items]);
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, item: typeof items[0]) => {
+    setActiveTab(item.name);
+
+    if (
+      pathname === "/" &&
+      (item.url.startsWith("#") || item.url.startsWith("/#") || item.url === "/")
+    ) {
+      const hash = item.url.includes("#") ? item.url.split("#")[1] : "";
+      if (hash) {
+        e.preventDefault();
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+          window.history.pushState(null, "", `#${hash}`);
+        }
+      } else if (item.url === "/" || item.url === "/#") {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.history.pushState(null, "", "/");
+      }
+    }
+  };
 
   return (
     <div
@@ -52,7 +141,7 @@ export function NavBar({ items, className }: NavBarProps) {
             <Link
               key={item.name}
               href={item.url}
-              onClick={() => setActiveTab(item.name)}
+              onClick={(e) => handleClick(e, item)}
               data-magnetic
               className={cn(
                 "relative cursor-none text-xs sm:text-sm font-medium px-4 sm:px-5 py-2 rounded-full transition-colors duration-300 select-none",
