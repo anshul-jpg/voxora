@@ -8,7 +8,8 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <Link href="/" className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/logo.svg" alt="Voxora Logo" width={24} height={24} className="h-6 w-6 text-white" />
               <span className="text-lg font-semibold text-white">{SITE.name}</span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-[rgba(254,254,254,0.5)]">

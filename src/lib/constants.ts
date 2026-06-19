@@ -21,10 +21,10 @@ import {
 import type { Demo, FAQItem, HowItWorksStep, Industry, PricingPlan, ROIMetric, TrustItem } from "@/types";
 
 export const SITE = {
-  name: "VoiceFlow AI",
+  name: "Voxora",
   tagline: "AI Receptionists & Voice Agents for Business",
-  email: "hello@voiceflowai.com",
-  phone: "(555) 847-2900",
+  email: "hello@voxora.ai",
+  phone: "7860135069",
 };
 
 export const NAV_LINKS = [
@@ -276,7 +276,7 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: "Can it book appointments?",
     answer:
-      "Absolutely. VoiceFlow integrates with Google Calendar, Calendly, Dentrix, and most practice management systems. The AI checks real-time availability and books appointments during the call, then sends SMS confirmations automatically.",
+      "Absolutely. Voxora integrates with Google Calendar, Calendly, Dentrix, and most practice management systems. The AI checks real-time availability and books appointments during the call, then sends SMS confirmations automatically.",
   },
   {
     question: "Can it transfer calls?",

@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://voiceflowai.com/sitemap.xml",
+    sitemap: "https://voxora.ai/sitemap.xml",
   };
 }

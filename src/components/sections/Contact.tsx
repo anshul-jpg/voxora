@@ -25,7 +25,7 @@ export function Contact() {
               badge="Contact"
               title="Book Your"
               highlight="Free Demo"
-              description="See how VoiceFlow can transform your call handling. We'll walk you through a live demo tailored to your industry."
+              description="See how Voxora can transform your call handling. We'll walk you through a live demo tailored to your industry."
               align="left"
             />
 

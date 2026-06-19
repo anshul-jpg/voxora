@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "VoiceFlow AI",
+  title: "Voxora - AI Receptionists & Voice Agents",
   description: "AI Voice Assistant Platform",
 };
 

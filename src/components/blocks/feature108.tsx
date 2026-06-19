@@ -84,7 +84,7 @@ const tabs: FeatureTab[] = [
       badge: "Ecosystem",
       title: "Plugs into the tools your team already uses.",
       description:
-        "VoiceFlow connects to your CRM, practice management software, and communication stack in days — not months. No engineering lift required.",
+        "Voxora connects to your CRM, practice management software, and communication stack in days — not months. No engineering lift required.",
       bulletPoints: [
         "Salesforce, HubSpot, Zoho CRM",
         "Zapier & Make automation bridges",
