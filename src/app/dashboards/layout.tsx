@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { MagneticCursor } from "@/components/ui/magnetic-cursor";
@@ -16,9 +16,12 @@ const NAV_LINKS = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [checking, setChecking] = useState(true);
-  const [activeNav, setActiveNav] = useState("Dashboard");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Derive the activeNav label based on the current pathname
+  const activeNav = NAV_LINKS.find((link) => pathname === link.href)?.label || "Dashboard";
 
   useEffect(() => {
     // Fix: use /api/auth/me (HTTP-only cookie) instead of localStorage
@@ -70,7 +73,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               key={link.label}
               href={link.href}
               onClick={() => {
-                setActiveNav(link.label);
                 if (isMobileView) setMobileSidebarOpen(false);
               }}
               className={`flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-150 no-underline ${

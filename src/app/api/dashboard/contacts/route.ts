@@ -18,22 +18,34 @@ export async function GET(req: Request) {
     // 🔐 Verify token
     verifyToken(token);
 
-    // Parse URL pagination query params
+    // Parse URL pagination & search query params
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.max(1, Math.min(100, parseInt(searchParams.get("limit") || "20", 10)));
     const skip = (page - 1) * limit;
 
+    const search = searchParams.get("search") || "";
+    const query = search
+      ? {
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { company: { $regex: search, $options: "i" } },
+            { phone: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
     await connectDB();
 
     // Query contacts with skip/limit pagination, and fetch total count
     const [contacts, total] = await Promise.all([
-      Contact.find()
+      Contact.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Contact.countDocuments(),
+      Contact.countDocuments(query),
     ]);
 
     return Response.json({
@@ -45,7 +57,7 @@ export async function GET(req: Request) {
         pages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
+  } catch {
     return Response.json(
       { message: "Unauthorized" },
       { status: 401 }
