@@ -19,6 +19,10 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
     },
+    orgId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+    },
     resetPasswordToken: {
       type: String,
       default: null,

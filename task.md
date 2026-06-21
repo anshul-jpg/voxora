@@ -52,6 +52,37 @@ This is the unified tracking checklist for Voxora AI's production readiness. It 
 
 ---
 
+## 💳 Phase 4: Dynamic Custom Attributes & Dashboard Engine (Sprint-1 In-Progress)
+
+### Part A: Database Normalization & Schema Restructuring
+- [x] **1.1 Create Organization Schema** — Define `Organization.ts` containing tenant details, Vapi phone references, `leadExtractionSchema`, and `dashboardColumns` array.
+- [x] **1.2 Create Call Schema** — Define `Call.ts` model. Add a strict unique index on `callId` to enforce idempotency.
+- [x] **1.3 Create DemoLead Schema** — Define `DemoLead.ts` model to log marketing demo leads.
+- [x] **1.4 Refactor User Schema** — Clean up `User.ts` model by removing billing fields and adding `orgId` association.
+- [x] **1.5 Refactor Lead Schema** — Update `Lead.ts` model to contain the generic `customData` Map.
+- [x] **1.6 Add Wildcard Indexing** — Enforce B-Tree indexing on `LeadSchema` dynamic fields: `customData.$**`.
+
+### Part B: Webhooks Data Collection & Structured Extractions
+- [x] **2.1 Validate Webhook Authentication** — Implement `x-vapi-secret` validation on `/api/vapi-webhook` POST handler.
+- [x] **2.2 Implement assistant-request Schema Injection** — Inject the organization's dynamic `leadExtractionSchema` into Vapi's `analysisPlan.structuredDataSchema` to bind the LLM and extract custom attributes.
+- [x] **2.3 Implement Idempotency Lock on call-report** — Execute a raw insert of `callId` into the `calls` collection as the first line of the webhook handler, aborting if duplicate key (code `11000`) is caught.
+- [x] **2.4 Implement Dot-Notation Merger** — Convert Vapi's extracted JSON fields into dot-notation paths (`"customData.key"`) before running `$set` to prevent amnesia overwrites.
+- [x] **2.5 Update Call Telemetry Log** — Save full call details (including raw cost, prompt version, and termination reason) and update the call log status to processed.
+
+### Part C: Dynamic Dashboard UI Components
+- [x] **3.1 Implement Pinned Headers Grid** — Read organization's columns configuration. Filter to display only columns flagged as `isPinned` (cap to a maximum of 3) in the main table layout.
+- [x] **3.2 Implement Sliding Details Drawer** — Add a detail modal or sliding side drawer that maps and displays every custom attribute in a clean vertical layout when a row is clicked.
+
+### Part D: Backlog - Stripe Billing & Subscriptions (Deferred)
+- [ ] **4.1 Create Subscription Schema** — Define decoupled `Subscription.ts` schema for dual-ledger tracking.
+- [ ] **4.2 Implement Overdraft Check in assistant-request** — Dynamic voicemail routing at -$15.00 limit.
+- [ ] **4.3 Implement Dual-Ledger Deduction Waterfall** — Minute deduction vs Cash deduction.
+- [ ] **4.4 Implement invoice.paid Handler** — Reset monthly base quota with conditional positive balance rollover.
+- [ ] **4.5 Implement checkout.session.completed Handler** — Atomic overage wallet increments.
+- [ ] **4.6 Implement customer.subscription.deleted Handler** — Subscription cancellations and voicemail fallback.
+
+---
+
 ## 🔄 Required Workflow Adjustments for Developers
 
 To maintain security baselines as development continues:

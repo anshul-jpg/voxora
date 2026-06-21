@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb";
+import clientPromise, { connectDB } from "@/lib/mongodb";
 import { rateLimit } from "@/lib/rate-limit";
 
 const generateTrackingCode = (prefix = "APX-", length = 8) => {
@@ -38,6 +38,84 @@ export async function POST(request: Request) {
 
     const payload = await request.json();
     console.log("🚀 Incoming Webhook Event Type:", payload.message?.type);
+
+    if (payload.message?.type === "assistant-request") {
+      const vapiPhoneNumberId = payload.message?.call?.phoneNumberId;
+      await connectDB();
+      const Organization = (await import("@/models/Organization")).default;
+      const org = await Organization.findOne({ vapiPhoneNumberId });
+      
+      const response = {
+        assistant: {
+          analysisPlan: {
+            structuredDataSchema: org?.leadExtractionSchema || {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                email: { type: "string" },
+              }
+            }
+          },
+          maxDurationSeconds: 1800
+        }
+      };
+      return NextResponse.json(response, { status: 200 });
+    }
+
+    if (payload.message?.type === "end-of-call-report") {
+      const callId = payload.message.call.id;
+      await connectDB();
+      const Call = (await import("@/models/Call")).default;
+      const Lead = (await import("@/models/Lead")).default;
+      const Organization = (await import("@/models/Organization")).default;
+
+      const org = await Organization.findOne({ vapiPhoneNumberId: payload.message.call.phoneNumberId });
+      
+      try {
+        await Call.create({
+          callId,
+          orgId: org?._id,
+          status: payload.message.call.status || "completed",
+          durationSeconds: payload.message.call.durationSeconds,
+          cost: payload.message.call.cost,
+          terminationReason: payload.message.call.endedReason,
+          recordingUrl: payload.message.recordingUrl,
+          transcript: payload.message.transcript,
+          rawTelemetry: payload.message
+        });
+      } catch (err: any) {
+        if (err.code === 11000) {
+          console.log("Duplicate call webhook received, ignoring.");
+          return NextResponse.json({ status: "already_processed" }, { status: 200 });
+        }
+        throw err;
+      }
+
+      const structuredData = payload.message.analysis?.structuredData || {};
+      const updatePayload: any = {
+        lastCallId: callId,
+      };
+      
+      for (const [key, value] of Object.entries(structuredData)) {
+        if (key === "name" || key === "email") {
+            updatePayload[key] = value;
+        } else {
+            updatePayload[`customData.${key}`] = value;
+        }
+      }
+
+      const customerPhone = payload.message.call.customer?.number || "Unknown";
+      
+      if (org) {
+        await Lead.findOneAndUpdate(
+          { phone: customerPhone, orgId: org._id },
+          { $set: updatePayload, $setOnInsert: { orgId: org._id, phone: customerPhone, status: "new" } },
+          { upsert: true, new: true }
+        );
+      }
+
+      return NextResponse.json({ status: "success" }, { status: 200 });
+    }
 
     if (payload.message?.type === "tool-calls") {
       const toolCall = payload.message.toolCallList?.[0] || payload.message.toolCall;
