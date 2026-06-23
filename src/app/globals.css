@@ -39,7 +39,7 @@
   --shadow-offset-x: 0px;
   --shadow-offset-y: 1px;
   --sidebar-primary: #fafafa;
-  --muted-foreground: #a1a1a1;
+  --muted-foreground: rgba(254, 254, 254, 0.6);
   --accent-foreground: #fafafa;
   --popover-foreground: #fafafa;
   --primary-foreground: #fafafa;
@@ -142,7 +142,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: clip;
-  position: relative;
+  /* NOTE: No position:relative here — that creates a stacking context
+     which would trap the portaled cursor inside body's context and
+     prevent mix-blend-mode from compositing against page siblings. */
 }
 
 /* Restore default cursor for touch / in case cursor component is missing */
@@ -150,9 +152,10 @@ body {
   body { cursor: auto; }
 }
 
-/* Magnetic cursor must never expand the scrollable area */
+/* Magnetic cursor: no properties that create a stacking context.
+   contain, overflow, will-change, filter, transform all break mix-blend-mode. */
 .magnetic-cursor {
-  contain: layout;
+  z-index: 2147483647 !important;
 }
 
 @media (hover: none), (pointer: coarse) {

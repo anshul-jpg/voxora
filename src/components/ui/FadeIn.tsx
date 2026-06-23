@@ -1,25 +1,52 @@
 "use client";
 
-import { motion, type HTMLMotionProps } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
-interface FadeInProps extends HTMLMotionProps<"div"> {
+interface FadeInProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   delay?: number;
   className?: string;
 }
 
-export function FadeIn({ children, delay = 0, className, ...props }: FadeInProps) {
+export function FadeIn({ children, delay = 0, className, style, ...props }: FadeInProps) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [animationDone, setAnimationDone] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { rootMargin: "-80px" }
+    );
+    const el = ref.current;
+    if (el) observer.observe(el);
+    return () => { if (el) observer.unobserve(el); };
+  }, []);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, delay, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className={cn(className)}
+    <div
+      ref={ref}
+      className={cn(!isVisible && "pointer-events-none", className)}
+      onTransitionEnd={() => setAnimationDone(true)}
+      style={
+        animationDone
+          ? style
+          : {
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? "none" : "translateY(24px)",
+              transition: `opacity 0.6s cubic-bezier(0.21,0.47,0.32,0.98) ${delay}s, transform 0.6s cubic-bezier(0.21,0.47,0.32,0.98) ${delay}s`,
+              ...style,
+            }
+      }
       {...props}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

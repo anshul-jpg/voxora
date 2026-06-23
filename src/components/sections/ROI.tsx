@@ -29,12 +29,12 @@ export function ROI() {
   return (
     <section className="relative py-24 md:py-32 overflow-hidden">
       {/* Ambient background glow */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute bottom-10 left-1/3 w-[600px] h-[600px] bg-ambient-pink rounded-full blur-[140px] animate-ambient" style={{ animationDelay: "-5s" }} />
         <div className="absolute top-10 right-1/4 w-[500px] h-[500px] bg-ambient-blue rounded-full blur-[110px] animate-ambient" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         <FadeIn>
           <SectionHeader
             badge="ROI"
@@ -98,7 +98,7 @@ export function ROI() {
                 </div>
 
                 {/* Columns */}
-                <div className="relative z-10 flex flex-grow items-end gap-4 md:gap-8 pb-6">
+                <div className="relative flex flex-grow items-end gap-4 md:gap-8 pb-6">
                   {chartData.map((data, i) => (
                     <div key={data.month} className="flex flex-1 flex-col items-center justify-end h-full relative">
                       {/* Bars container */}

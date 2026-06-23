@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FOOTER_LINKS, SITE } from "@/lib/constants";
+import SmartPhoneLink from "@/components/ui/SmartPhoneLink";
 
 export function Footer() {
   return (
@@ -65,9 +66,12 @@ export function Footer() {
             <a href={`mailto:${SITE.email}`} data-magnetic className="transition-colors hover:text-white cursor-none">
               {SITE.email}
             </a>
-            <a href={`tel:${SITE.phone}`} data-magnetic className="transition-colors hover:text-white cursor-none">
-              {SITE.phone}
-            </a>
+            <SmartPhoneLink
+              phoneRaw={SITE.phone}
+              displayLabel={SITE.phone}
+              data-magnetic
+              className="transition-colors hover:text-white cursor-none"
+            />
           </div>
         </div>
       </div>

@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
+import SmartPhoneLink from "@/components/ui/SmartPhoneLink";
+
 export function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -72,13 +74,12 @@ export function Contact() {
               </div>
               <div>
                 <p className="text-sm text-[rgba(254,254,254,0.5)]">Phone</p>
-                <a
-                  href={`tel:${SITE.phone}`}
+                <SmartPhoneLink
+                  phoneRaw={SITE.phone}
+                  displayLabel={SITE.phone}
                   data-magnetic
                   className="text-white transition-colors hover:text-[rgba(254,254,254,0.7)] hover:underline cursor-none inline-block"
-                >
-                  {SITE.phone}
-                </a>
+                />
               </div>
             </div>
           </FadeIn>

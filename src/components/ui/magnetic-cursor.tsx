@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, FC, ReactNode, useState } from "react";
+import { createPortal } from "react-dom";
 import gsap from "gsap";
 import { vec2, Vector2 } from "vecteur";
 
@@ -29,7 +30,6 @@ interface CursorState {
   isDetaching: boolean;
 }
 
-
 export const MagneticCursor: FC<MagneticCursorProps> = ({
   children,
   lerpAmount = 0.1,
@@ -49,8 +49,9 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
 }) => {
   const cursorRef = useRef<HTMLDivElement>(null);
   const cursorStateRef = useRef<CursorState | null>(null);
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
+  // Store config in a mutable ref to prevent useEffect re-runs and warning
   const configRef = useRef({
     magneticFactor,
     speedMultiplier,
@@ -59,6 +60,10 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
     cursorSize,
     lerpAmount,
     hoverPadding,
+    hoverAttribute,
+    shape,
+    disableOnTouch,
+    cursorColor,
   });
 
   useEffect(() => {
@@ -70,15 +75,31 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
       cursorSize,
       lerpAmount,
       hoverPadding,
+      hoverAttribute,
+      shape,
+      disableOnTouch,
+      cursorColor,
     };
-  }, [magneticFactor, speedMultiplier, maxScaleX, maxScaleY, cursorSize, lerpAmount, hoverPadding]);
+  }, [
+    magneticFactor,
+    speedMultiplier,
+    maxScaleX,
+    maxScaleY,
+    cursorSize,
+    lerpAmount,
+    hoverPadding,
+    hoverAttribute,
+    shape,
+    disableOnTouch,
+    cursorColor,
+  ]);
 
   useEffect(() => {
-    setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
+    setIsMounted(true);
   }, []);
 
   useEffect(() => {
-    if (disableOnTouch && isTouchDevice) return;
+    if (!isMounted) return;
     const cursorEl = cursorRef.current;
     if (!cursorEl) return;
 
@@ -137,9 +158,13 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
       }
     };
 
-    const initializePosition = (event: MouseEvent) => {
+    const initializePosition = (event: PointerEvent) => {
       const state = cursorStateRef.current;
       if (!state) return;
+      
+      const { disableOnTouch } = configRef.current;
+      if (disableOnTouch && event.pointerType === "touch") return;
+
       state.pos.current.x = event.clientX;
       state.pos.current.y = event.clientY;
       state.pos.target.x = event.clientX;
@@ -152,6 +177,13 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
     const onMouseMove = (event: PointerEvent) => {
       const state = cursorStateRef.current;
       if (!state) return;
+
+      const { disableOnTouch } = configRef.current;
+      if (disableOnTouch && event.pointerType === "touch") {
+        gsap.to(cursorEl, { opacity: 0, duration: 0.2, overwrite: "auto" });
+        return;
+      }
+
       state.pos.target.x = event.clientX;
       state.pos.target.y = event.clientY;
 
@@ -170,8 +202,11 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
 
     const handleMouseLeave = () =>
       gsap.to(cursorEl, { opacity: 0, duration: 0.3 });
-    const handleMouseEnter = () =>
+    const handleMouseEnter = () => {
+      const state = cursorStateRef.current;
+      if (!state) return;
       gsap.to(cursorEl, { opacity: 1, duration: 0.3 });
+    };
 
     gsap.ticker.add(update);
     window.addEventListener("pointermove", onMouseMove);
@@ -181,8 +216,9 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
 
     const cleanupFunctions: (() => void)[] = [];
 
+    const { hoverAttribute: activeHoverAttribute } = configRef.current;
     const magneticElements = gsap.utils.toArray<HTMLElement>(
-      `[${hoverAttribute}]`
+      `[${activeHoverAttribute}]`
     );
     magneticElements.forEach((el) => {
       const xTo = gsap.quickTo(el, "x", {
@@ -194,12 +230,14 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
         ease: "elastic.out(1, 0.3)",
       });
 
-      const handlePointerEnter = () => {
+      const handlePointerEnter = (event: PointerEvent) => {
         const state = cursorStateRef.current;
         if (!state) return;
-        state.isDetaching = false;
+        
+        const { disableOnTouch, cursorSize } = configRef.current;
+        if (disableOnTouch && event.pointerType === "touch") return;
 
-        const { cursorSize } = configRef.current;
+        state.isDetaching = false;
 
         gsap.killTweensOf(cursorEl);
         gsap.to(cursorEl, {
@@ -215,13 +253,15 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
         });
       };
 
-      const handlePointerLeave = () => {
+      const handlePointerLeave = (event: PointerEvent) => {
         const state = cursorStateRef.current;
         if (!state) return;
 
-        const { cursorSize } = configRef.current;
+        const { disableOnTouch, cursorSize, shape: currentShape } = configRef.current;
+        if (disableOnTouch && event.pointerType === "touch") return;
+
         const shapeBorderRadius =
-          shape === "circle" ? "50%" : shape === "square" ? "0" : "8px";
+          currentShape === "circle" ? "50%" : currentShape === "square" ? "0" : "8px";
 
         gsap.killTweensOf(cursorEl);
         gsap.to(cursorEl, {
@@ -238,6 +278,9 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
 
       let rafId: number | null = null;
       const handlePointerMove = (event: PointerEvent) => {
+        const { disableOnTouch } = configRef.current;
+        if (disableOnTouch && event.pointerType === "touch") return;
+
         if (rafId) return;
         rafId = requestAnimationFrame(() => {
           const { clientX, clientY } = event;
@@ -273,48 +316,38 @@ export const MagneticCursor: FC<MagneticCursorProps> = ({
       document.removeEventListener("mouseleave", handleMouseLeave);
       document.removeEventListener("mouseenter", handleMouseEnter);
       cleanupFunctions.forEach((fn) => fn());
-      // Clear all GSAP-applied inline styles to prevent transform leaking
-      // during React reconciliation (e.g. when isTouchDevice changes)
       if (cursorEl) {
         gsap.set(cursorEl, { clearProps: "all" });
       }
     };
-  }, [disableOnTouch, isTouchDevice, hoverPadding, hoverAttribute, cursorColor, shape]);
-
-  if (disableOnTouch && isTouchDevice) return <>{children}</>;
+  }, [isMounted]);
 
   const styles: React.CSSProperties = {
     position: "fixed",
     top: 0,
     left: 0,
-    zIndex: 9999,
+    zIndex: 2147483647,
     pointerEvents: "none",
-    willChange: "transform, width, height, border-radius",
     backgroundColor: cursorColor,
     mixBlendMode: blendMode as React.CSSProperties["mixBlendMode"],
     width: cursorSize,
     height: cursorSize,
     borderRadius:
       shape === "circle" ? "50%" : shape === "square" ? "0" : "8px",
-    backdropFilter:
-      contrastBoost !== 1 ? `contrast(${contrastBoost})` : "none",
-    WebkitBackdropFilter:
-      contrastBoost !== 1 ? `contrast(${contrastBoost})` : "none",
-    contain: "layout style paint",
-    overflow: "hidden",
   };
+
+  const cursorEl = (
+    <div
+      key="__mc"
+      ref={cursorRef}
+      className={`magnetic-cursor ${cursorClassName}`}
+      style={styles}
+    />
+  );
 
   return (
     <>
-      {/* key="__mc" prevents React from reusing this DOM node for page content
-          when the component switches to touch-mode (isTouchDevice=true).
-          Without the key, GSAP's translate(-50%,-50%) leaks onto the page div. */}
-      <div
-        key="__mc"
-        ref={cursorRef}
-        className={`magnetic-cursor ${cursorClassName}`}
-        style={styles}
-      />
+      {isMounted ? createPortal(cursorEl, document.body) : null}
       {children}
     </>
   );
