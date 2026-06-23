@@ -25,13 +25,14 @@ export async function GET(req: Request) {
     const skip = (page - 1) * limit;
 
     const search = searchParams.get("search") || "";
-    const query = search
+    const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const query = escapedSearch
       ? {
           $or: [
-            { name: { $regex: search, $options: "i" } },
-            { email: { $regex: search, $options: "i" } },
-            { company: { $regex: search, $options: "i" } },
-            { phone: { $regex: search, $options: "i" } },
+            { name: { $regex: escapedSearch, $options: "i" } },
+            { email: { $regex: escapedSearch, $options: "i" } },
+            { company: { $regex: escapedSearch, $options: "i" } },
+            { phone: { $regex: escapedSearch, $options: "i" } },
           ],
         }
       : {};

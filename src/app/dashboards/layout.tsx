@@ -11,7 +11,6 @@ import { motion, AnimatePresence } from "framer-motion";
 const NAV_LINKS = [
   { label: "Dashboard", href: "/dashboards" },
   { label: "Leads", href: "/dashboards/leads" },
-  { label: "Analytics", href: "/dashboards/analytics" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
