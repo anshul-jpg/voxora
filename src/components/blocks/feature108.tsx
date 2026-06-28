@@ -4,7 +4,7 @@ import { useState } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
 import { Mic, Calendar, Zap, Clock, UserCheck, Phone } from "lucide-react";
 import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/Badge";
+
 
 interface TabContent {
   badge: string;
@@ -129,12 +129,7 @@ export function Feature108() {
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <Badge
-            variant="outline"
-            className="badge-accent mb-4"
-          >
-            <span className="text-gradient-gemini">Features</span>
-          </Badge>
+
           <h2 className="text-4xl font-semibold text-[#fefefe] md:text-5xl max-w-2xl mx-auto">
             Everything you need to{" "}
             <span className="text-[rgba(254,254,254,0.4)]">never miss a call</span>
@@ -189,12 +184,7 @@ export function Feature108() {
                 >
                   {/* Left: text */}
                   <div>
-                    <Badge
-                      variant="outline"
-                      className="badge-accent mb-4"
-                    >
-                      <span className="text-gradient-gemini">{tab.content.badge}</span>
-                    </Badge>
+
                     <h3 className="text-3xl font-semibold text-[#fefefe] leading-tight md:text-4xl">
                       {tab.content.title}
                     </h3>

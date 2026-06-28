@@ -12,7 +12,7 @@ import { MagneticCursor } from "@/components/ui/magnetic-cursor";
 
 export default function Home() {
   return (
-    <MagneticCursor magneticFactor={0.3} cursorSize={28} blendMode="exclusion">
+    <MagneticCursor cursorSize={32} blendMode="exclusion" cursorColor="#ffffff">
       <Navbar />
       <main>
         <Hero />

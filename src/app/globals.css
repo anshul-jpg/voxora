@@ -39,7 +39,7 @@
   --shadow-offset-x: 0px;
   --shadow-offset-y: 1px;
   --sidebar-primary: #fafafa;
-  --muted-foreground: rgba(254, 254, 254, 0.6);
+  --muted-foreground: #999999;
   --accent-foreground: #fafafa;
   --popover-foreground: #fafafa;
   --primary-foreground: #fafafa;

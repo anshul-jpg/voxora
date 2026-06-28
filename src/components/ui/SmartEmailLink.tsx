@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface SmartEmailLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
@@ -35,11 +36,21 @@ export default function SmartEmailLink({
       {...props}
     >
       {displayLabel}
-      {copied && (
-        <span className="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-white px-2 py-0.5 text-[10px] font-bold text-black shadow-lg whitespace-nowrap z-50">
-          Copied!
-        </span>
-      )}
+      <AnimatePresence>
+        {copied && (
+          <motion.span
+            initial={{ opacity: 0, y: 5, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: -5, x: "-50%" }}
+            transition={{ duration: 0.15 }}
+            role="status"
+            aria-live="polite"
+            className="absolute -top-8 left-1/2 rounded bg-white px-2 py-0.5 text-[10px] font-bold text-black shadow-lg whitespace-nowrap z-50"
+          >
+            Copied!
+          </motion.span>
+        )}
+      </AnimatePresence>
     </a>
   );
 }

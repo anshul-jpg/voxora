@@ -25,13 +25,6 @@ export function SectionHeader({
         className
       )}
     >
-      {badge && (
-        <span
-          className="badge-accent inline-block mb-4 px-3 py-1 text-xs font-bold tracking-widest uppercase rounded-full"
-        >
-          <span className="text-gradient-gemini">{badge}</span>
-        </span>
-      )}
       <h2 className="text-3xl font-semibold tracking-tight text-foreground md:text-4xl lg:text-5xl">
         {title}
         {highlight && (
